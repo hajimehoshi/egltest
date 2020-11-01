@@ -17,12 +17,13 @@ bool initializeEGL(EGLNativeDisplayType nativedisplay, EGLNativeWindowType nativ
   }
 
   EGLint attr[] = {
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+    EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
     EGL_BUFFER_SIZE, 32,
     EGL_RED_SIZE, 8,
     EGL_GREEN_SIZE, 8,
     EGL_BLUE_SIZE, 8,
     EGL_ALPHA_SIZE, 8,
-    EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
     EGL_NONE};
   EGLConfig config = nullptr;
   EGLint numConfigs = 0;
@@ -41,13 +42,20 @@ bool initializeEGL(EGLNativeDisplayType nativedisplay, EGLNativeWindowType nativ
     return false;
   }
 
-  EGLint ctxattr[] = {EGL_CONTEXT_MAJOR_VERSION, 2, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
+  EGLint ctxattr[] = {
+    EGL_CONTEXT_MAJOR_VERSION, 2,
+    EGL_CONTEXT_MINOR_VERSION, 1,
+    EGL_NONE};
   *context = eglCreateContext(*display, config, EGL_NO_CONTEXT, ctxattr);
   if (*context == EGL_NO_CONTEXT) {
     fprintf(stderr, "eglCreateContext failed: %d\n", eglGetError());
     return false;
   }
-  eglMakeCurrent(*display, *surface, *surface, *context);
+
+  if (!eglMakeCurrent(*display, *surface, *surface, *context)) {
+    fprintf(stderr, "eglMakeCurrent failed: %d\n", eglGetError());
+    return false;
+  }
 
   return true;
 }
